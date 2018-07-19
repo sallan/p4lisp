@@ -100,17 +100,14 @@
 	 (host (p4-server-host p)))
     (ssh host "sudo cat /etc/cron.d/perforce-scripts")))
 
-;; These 2 are doing the right thing, but also throwing an exception.
-
-;; ("The value\n -30\nis not of type\n (UNSIGNED-BYTE 8)\nwhen setting
-	;; an element of (ARRAY (UNSIGNED-BYTE 8))" " [Condition of
-	;; type TYPE-ERROR]" nil) (("ABORT" "Exit debugger, returning
-	;; to top level."))
+;; NOTE: Using the -v option to mv causes an exception. The file gets
+;; moved, but the sb-ext has difficulting with the output of the -v
+;; option.
 (defun cron-off (n)
   "Move perforce-scripts to a safe place on server N"
   (let* ((p (aref *p4-servers* n))
 	 (host (p4-server-host p)))
-    (ssh host "sudo mv -v /etc/cron.d/perforce-scripts /data/cronjobs/perforce-scripts")))
+    (ssh host "sudo mv /etc/cron.d/perforce-scripts /data/cronjobs/perforce-scripts")))
   
 (defun cron-on (n)
   "Move perforce-scripts to a safe place on server N"
