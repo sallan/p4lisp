@@ -72,6 +72,49 @@
 		      :brokers '()))
 
 
+;; TODO: Add a :service slot to the p4-server structure.
+;; How about the proxies?
+
+;; Palo Alto proxy
+(setf (aref *p4-servers* 14)
+      (make-p4-server :host "dvp4edgepl014"
+		      :root "/data/perforce/p4proxy-21667"
+		      :brokers '(1667)))
+
+
+;; Austin proxy
+(setf (aref *p4-servers* 2)
+      (make-p4-server :host "p4-aus-proxy-002"
+		      :root "/data/perforce/p4proxy-21667"
+		      :brokers '(1667)))
+
+;; London proxy
+(setf (aref *p4-servers* 15)
+      (make-p4-server :host "dvp4edgepl015"
+		      :root "/data/perforce/p4proxy-21667"
+		      :brokers '(1667)))
+
+;; Edge proxies
+(setf (aref *p4-servers* 18)
+      (make-p4-server :host "dvp4edgepl018"
+		      :root "/data/perforce/p4proxy-21667"
+		      :brokers '(1667)))
+
+(setf (aref *p4-servers* 19)
+      (make-p4-server :host "dvp4edgepl019"
+		      :root "/data/perforce/p4proxy-21667"
+		      :brokers '(1667)))
+
+(setf (aref *p4-servers* 20)
+      (make-p4-server :host "dvp4edgepl020"
+		      :root "/data/perforce/p4proxy-21667"
+		      :brokers '(1667)))
+
+
+;; example usage
+;;
+;; (mapcar (lambda (x) (cons x (p4ssh x "ls /data/perforce/scripts"))) '(15 18 19 20))
+
 ;;; SSH commands
 (defun ssh (host cmd)
   "Run CMD on HOST"
@@ -144,3 +187,12 @@ in mainteance mode."
 If the server has multiple ports, it will attempt to put all of them
 in production mode."
   (set-broker n "production"))
+
+;;; A general p4 query command might be useful. We can't allow any
+;;; interactive commands.
+(defun p4q (host port client cmd)
+  "Run CMD on host:port if CMD is 'legal'"
+  ;; TODO: Learn how to use keyword arguments and defaults.
+  (princ "To be written"))
+
+  
