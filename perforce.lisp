@@ -67,12 +67,12 @@
 (setf (aref *p4-servers* 16)
       (make-p4-server :host "dvp4edgepl016"
 		      :root "/data/perforce/test-commit"
-		      :brokers '()))
+		      :brokers '(1667)))
 
 (setf (aref *p4-servers* 17)
       (make-p4-server :host "dvp4edgepl017"
 		      :root "/data/perforce/test-edge"
-		      :brokers '()))
+		      :brokers '(1667)))
 
 ;;; Proxies
 ;; Palo Alto proxy
@@ -186,6 +186,7 @@ If the server has multiple ports, it will attempt to put all of them
 in production mode."
   (set-broker n "production"))
 
+;; LS in server home
 (defun ls-server-home (n &optional (subdir ""))
   "Run ls in the server top-level directory for server N.
 
@@ -193,16 +194,36 @@ This script knows the name of the top-level directory for each server
 and runs ls relative to that directory. With the optional relative
 path string, it will run ls in that directory. This path must be under
 the server home."
-
   (let* ((p (aref *p4-servers* n))
 	 (host (p4-server-host p))
 	 (root (p4-server-root p)))
     (p4ssh host (format nil "ls ~a/~a" root subdir))))
-    
+
+;; Check brokers
+(defun check-brokers (n)
+  "Run 'p4 info' on each of the broker ports for server N"
+  (let* ((p (aref *p4-servers* n))
+	 (host (p4-server-host p))
+	 (brokers (p4-server-brokers p)))
+    (flet ((info (h p)
+	     (cons h (p4 "info" h p))))
+      (mapcar (lambda (port) (info host port)) brokers))))
+
+;; Check server
+(defun check-server (n)
+  "Run 'p4 info' on the server port (21667) for N"
+  (let* ((p (aref *p4-servers* n))
+	 (host (p4-server-host p)))
+    (cons host (p4 "info" host "21667"))))
     
 ;;; A general p4 query command might be useful. We can't allow any
 ;;; interactive commands.
-(defun p4q (host port client cmd)
+;;; TODO: Learn how to use keyword arguments and defaults.
+(defun p4 (cmd host port)
   "Run CMD on host:port if CMD is 'legal'"
-  ;; TODO: Learn how to use keyword arguments and defaults.
-  (princ "To be written"))
+  (let ((string (with-output-to-string (str) 
+		  (sb-ext:run-program "p4" (list "-p" (format nil "~a:~a" host port) "-c" "NONE" cmd)
+				      :search t
+				      :wait t
+				      :output str))))
+    string))
