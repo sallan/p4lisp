@@ -2,7 +2,10 @@
 ;;;;
 ;;;; This is work in progress so a lot of this will get tossed away.
 ;;;; ===============================================================
+
+;;; TODO: Add a :service and :comment slots to the p4-server structure.
 (defstruct p4-server host root brokers)
+
 (defparameter *p4-servers* (make-array 22))
 (setf (aref *p4-servers* 3)
       (make-p4-server :host "dvp4edgepl003"
@@ -63,28 +66,18 @@
 ;; Sandbox servers for testing
 (setf (aref *p4-servers* 16)
       (make-p4-server :host "dvp4edgepl016"
-		      :root "/data/perforce/offline"
+		      :root "/data/perforce/test-commit"
 		      :brokers '()))
 
 (setf (aref *p4-servers* 17)
       (make-p4-server :host "dvp4edgepl017"
-		      :root "/data/perforce/offline"
+		      :root "/data/perforce/test-edge"
 		      :brokers '()))
 
-
-;; TODO: Add a :service slot to the p4-server structure.
-;; How about the proxies?
-
+;;; Proxies
 ;; Palo Alto proxy
 (setf (aref *p4-servers* 14)
       (make-p4-server :host "dvp4edgepl014"
-		      :root "/data/perforce/p4proxy-21667"
-		      :brokers '(1667)))
-
-
-;; Austin proxy
-(setf (aref *p4-servers* 2)
-      (make-p4-server :host "p4-aus-proxy-002"
 		      :root "/data/perforce/p4proxy-21667"
 		      :brokers '(1667)))
 
@@ -110,6 +103,11 @@
 		      :root "/data/perforce/p4proxy-21667"
 		      :brokers '(1667)))
 
+;; Austin proxy
+(setf (aref *p4-servers* 2)
+      (make-p4-server :host "p4-aus-proxy-002"
+		      :root "/data/perforce/p4proxy-21667"
+		      :brokers '(1667)))
 
 ;; example usage
 ;;
@@ -188,11 +186,23 @@ If the server has multiple ports, it will attempt to put all of them
 in production mode."
   (set-broker n "production"))
 
+(defun ls-server-home (n &optional (subdir ""))
+  "Run ls in the server top-level directory for server N.
+
+This script knows the name of the top-level directory for each server
+and runs ls relative to that directory. With the optional relative
+path string, it will run ls in that directory. This path must be under
+the server home."
+
+  (let* ((p (aref *p4-servers* n))
+	 (host (p4-server-host p))
+	 (root (p4-server-root p)))
+    (p4ssh host (format nil "ls ~a/~a" root subdir))))
+    
+    
 ;;; A general p4 query command might be useful. We can't allow any
 ;;; interactive commands.
 (defun p4q (host port client cmd)
   "Run CMD on host:port if CMD is 'legal'"
   ;; TODO: Learn how to use keyword arguments and defaults.
   (princ "To be written"))
-
-  
