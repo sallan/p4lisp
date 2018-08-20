@@ -2,76 +2,101 @@
 ;;;;
 ;;;; This is work in progress so a lot of this will get tossed away.
 ;;;; ===============================================================
-
-;;; TODO: Add a :service and :comment slots to the p4-server structure.
-(defstruct p4-server host root brokers)
-
+(defstruct p4-server host root service comment brokers)
 (defparameter *p4-servers* (make-array 22))
+
 (setf (aref *p4-servers* 3)
       (make-p4-server :host "dvp4edgepl003"
 		      :root "/data/perforce/dvp4edgepl003-edge"
+		      :service 'edge-server
+		      :comment "Teamcity builds using shared directory"
 		      :brokers '(1667)))
 
 (setf (aref *p4-servers* 4)
       (make-p4-server :host "dvp4edgepl004"
 		      :root "/data/perforce/dvp4edgepl004-edge"
+		      :service 'edge-server
+		      :comment "Supposed to be for Perf"
 		      :brokers '(1667)))
 
 (setf (aref *p4-servers* 5)
       (make-p4-server :host "dvp4edgepl005"
 		      :root "/data/perforce/dvp4edgepl005-edge"
+		      :service 'edge-server
+		      :comment "Teamcity Gauntlet configs and AWS Temcity build"
 		      :brokers '(1667)))
 
 (setf (aref *p4-servers* 6)
       (make-p4-server :host "dvp4edgepl006"
 		      :root "/data/perforce/dvp4edgepl006-ro-master"
+		      :service 'replica
+		      :comment "RO Replica for the Commit server"
 		      :brokers '(1667)))
 
 (setf (aref *p4-servers* 7)
       (make-p4-server :host "dvp4edgepl007"
 		      :root "/data/perforce/dvp4edgepl007-fwd-master"
+		      :service 'forwarding-replica
+		      :comment "Forwarding Replica for the Commit server"
 		      :brokers '(1667 1999)))
 
 (setf (aref *p4-servers* 8)
       (make-p4-server :host "dvp4edgepl008"
 		      :root "/data/perforce/dvp4edgepl008-fwd-master"
+		      :service 'forwarding-replica
+		      :comment "Forwarding Replica for the Commit server"
 		      :brokers '(1667 1999)))
 
 (setf (aref *p4-servers* 9)
       (make-p4-server :host "dvp4edgepl009"
 		      :root "/data/perforce/master"
+		      :service 'commit-server
+		      :comment "The Commit server"
 		      :brokers '(1666 1667)))
 
 (setf (aref *p4-servers* 10)
       (make-p4-server :host "dvp4edgepl010"
 		      :root "/data/perforce/dvp4edgepl010-ro-dvp4edgepl005-edge"
+		      :service 'replica
+		      :comment "RO Replica for the 005 Edge server"
 		      :brokers '(1667)))
 
 (setf (aref *p4-servers* 12)
       (make-p4-server :host "dvp4edgepl012"
 		      :root "/data/perforce/dvp4edgepl012-ro-dvp4edgepl003-edge"
+		      :service 'replica
+		      :comment "RO Replica for the 003 Edge server"
+		      :brokers '(1667)))
+
+(setf (aref *p4-servers* 21)
+      (make-p4-server :host "dvp4edgepl021"
+		      :root "/data/perforce/dvp4edgepl021-ro-dvp4edgepl004-edge"
+		      :service 'replica
+		      :comment "RO Replica for the 004 Edge server"
 		      :brokers '(1667)))
 
 ;; Offline replica
 (setf (aref *p4-servers* 13)
       (make-p4-server :host "dvp4edgepl013"
 		      :root "/data/perforce/offline"
+		      :service nil
+		      :comment "Offline DR server for the Commit server."
 		      :brokers '()))
 
-(setf (aref *p4-servers* 21)
-      (make-p4-server :host "dvp4edgepl021"
-		      :root "/data/perforce/dvp4edgepl021-ro-dvp4edgepl004-edge"
-		      :brokers '(1667)))
 
 ;; Sandbox servers for testing
 (setf (aref *p4-servers* 16)
       (make-p4-server :host "dvp4edgepl016"
 		      :root "/data/perforce/test-commit"
+		      :service 'commit-server
+		      :comment "Test Commit server"
 		      :brokers '(1667)))
 
 (setf (aref *p4-servers* 17)
       (make-p4-server :host "dvp4edgepl017"
 		      :root "/data/perforce/test-edge"
+		      :service 'edge-server
+		      :comment "Test Edge server for the 017 test server"
 		      :brokers '(1667)))
 
 ;;; Proxies
@@ -79,34 +104,46 @@
 (setf (aref *p4-servers* 14)
       (make-p4-server :host "dvp4edgepl014"
 		      :root "/data/perforce/p4proxy-21667"
+		      :service 'proxy
+		      :comment "Palo Alto Proxy - points to Commit server"
 		      :brokers '(1667)))
 
 ;; London proxy
 (setf (aref *p4-servers* 15)
       (make-p4-server :host "dvp4edgepl015"
 		      :root "/data/perforce/p4proxy-21667"
+		      :service 'proxy
+		      :comment "London Proxy - points to the 004 Edge Server"
 		      :brokers '(1667)))
 
 ;; Edge proxies
 (setf (aref *p4-servers* 18)
       (make-p4-server :host "dvp4edgepl018"
 		      :root "/data/perforce/p4proxy-21667"
+		      :comment "Proxy to the 003 Edge server"
 		      :brokers '(1667)))
 
 (setf (aref *p4-servers* 19)
       (make-p4-server :host "dvp4edgepl019"
 		      :root "/data/perforce/p4proxy-21667"
+		      :service 'proxy
+		      :comment "Proxy to the 004 Edge server"
 		      :brokers '(1667)))
 
 (setf (aref *p4-servers* 20)
       (make-p4-server :host "dvp4edgepl020"
 		      :root "/data/perforce/p4proxy-21667"
+		      :service 'proxy
+		      :comment "Proxy to the 005 Edge server"
 		      :brokers '(1667)))
 
 ;; Austin proxy
 (setf (aref *p4-servers* 2)
       (make-p4-server :host "p4-aus-proxy-002"
+		      :service 'proxy
 		      :root "/data/perforce/p4proxy-21667"
+		      :service 'proxy
+		      :comment "Austin Proxy - points to the 004 Edge server"
 		      :brokers '(1667)))
 
 ;; example usage
@@ -199,31 +236,83 @@ the server home."
 	 (root (p4-server-root p)))
     (p4ssh host (format nil "ls ~a/~a" root subdir))))
 
+
+;;;; TODO: You have 2 different p4 functions.  Each is used in the
+;;;; check-* functions, and no place else. To confusing. Let's abandon
+;;;; the generic, top-level p4 function for now, and just write the
+;;;; simplest version that will work in these 2 functions.
+;;;; Actually, the only thing we do is call p4 info, so....
+
+;; p4 info
+(defun p4-info (&optional port)
+  "Run p4 info on PORT or default port if none provided."
+  (let* ((port-arg (when port
+		    (list "-p" (format nil "~a" port))))
+	 (string (with-output-to-string (str) 
+		   (sb-ext:run-program "p4" (append port-arg (list "info"))
+				       :search t
+				       :wait t
+				       :output str))))
+    string))
+
 ;; Check brokers
 (defun check-brokers (n)
   "Run 'p4 info' on each of the broker ports for server N"
   (let* ((p (aref *p4-servers* n))
 	 (host (p4-server-host p))
 	 (brokers (p4-server-brokers p)))
-    (flet ((info (h p)
-	     (cons h (p4 "info" h p))))
-      (mapcar (lambda (port) (info host port)) brokers))))
+    (mapcar (lambda (port)
+	      (p4-info (format nil "~a:~a" host port)))
+	    brokers)))
 
 ;; Check server
 (defun check-server (n)
   "Run 'p4 info' on the server port (21667) for N"
   (let* ((p (aref *p4-servers* n))
 	 (host (p4-server-host p)))
-    (cons host (p4 "info" host "21667"))))
-    
-;;; A general p4 query command might be useful. We can't allow any
-;;; interactive commands.
-;;; TODO: Learn how to use keyword arguments and defaults.
-(defun p4 (cmd host port)
-  "Run CMD on host:port if CMD is 'legal'"
-  (let ((string (with-output-to-string (str) 
-		  (sb-ext:run-program "p4" (list "-p" (format nil "~a:~a" host port) "-c" "NONE" cmd)
-				      :search t
-				      :wait t
-				      :output str))))
-    string))
+    (cons host (p4-info (format nil "~a:21667" host)))))
+
+;; Show server summary
+(defun show (n)
+  "Describe the server number N"
+  (let ((p (aref *p4-servers* n)))
+    (princ p)
+    nil))
+
+;; (defun p4 (cmd &optional host port)
+;;   "Run CMD on host:port if CMD is 'legal'"
+;;   ;; TODO: The -c NONE should be moved out of this function and put in
+;;   ;; the check-* functions. Then you should add an optional client arg.
+;;   (let ((string (with-output-to-string (str) 
+;; 		  (sb-ext:run-program "p4" (list "-p" (format nil "~a:~a" host port) "-c" "SALLAN-NO-CLIENT" cmd)
+;; 				      :search t
+;; 				      :wait t
+;; 				      :output str))))
+;;     string))
+
+;;; TODO:  Commands like this won't work
+;; (p4-new "changes -m 4")
+;; (p4-new "monitor show")
+;; "Unknown command.  Try 'p4 help' for info.
+;; "
+;; (defun p4-new (cmd &key port client)
+;;   "Run CMD on port if CMD is 'legal'"
+;;   (let* ((port-arg (when port
+;; 		       (list "-p" (format nil "~a" port))))
+;; 	 (client-arg (when client
+;; 		       (list "-c" (format nil "~a" client))))
+;; 	 (string (with-output-to-string (str) 
+;; 		   (sb-ext:run-program "p4" (append port-arg  client-arg (list cmd))
+;; 				       :search t
+;; 				       :wait t
+;; 				       :output str))))
+;;     string))
+
+;; (mapcar
+;;  (lambda (n)
+;;    (cons n (ls-server-home 4 "root/triggers/swarm-trigger.conf")))
+;;  '(3 4 5 6 7 8 9))
+
+;; TODO: Add a (help) function
+;; TODO: Cleanup p4 and p4-new
+
