@@ -166,11 +166,43 @@
 				      :output str))))
     string))
 
+(defun scp (file host dest)
+  "Copy FILE to DEST on HOST"
+  ;; If HOST is not a string, try to pull the hostname from *p4-servers*
+  (when (integerp host)
+    (let ((p (aref *p4-servers* host)))
+      (setf host (p4-server-host p))))
+  
+  (let ((string (with-output-to-string (str) 
+		  (sb-ext:run-program "scp" (list file (format nil "~a:~a" host dest))
+				      :search t
+				      :wait t
+				      :output str))))
+    string))
+
 (defun p4ssh (host cmd)
   "Run CMD on HOST as user perforce"
   (let ((newcmd (format nil "sudo -u perforce ~a" cmd)))
     (ssh host newcmd)))
 
+(defun p4scp (file host dest &optional mode)
+  "Copy FILE to DEST on HOST
+
+Since we can't actually use scp without a password, we have to fake
+this by copying the file to /data/transfer as you, then moving it to
+the destination."
+
+  ;; This will fail if destination isn't writeable
+  (scp file host "/data/transfer/")
+  (let* ((filename (file-namestring file))
+	 (tempfile (format nil "/data/transfer/~a" filename)))
+    (ssh host (format nil "sudo chown perforce:perforce ~a" tempfile))
+    (when mode
+      (ssh host (format nil "sudo -u perforce chmod ~a ~a" mode tempfile)))
+    (ssh host (format nil "sudo -u perforce mv ~a ~a" tempfile dest))))
+
+;;(p4scp "/cygdrive/d/perforce-admin/triggers/check_client_view.py" "dvp4edgepl016" "/data/perforce/" 755)
+    
 ;;; Cron functions
 (defun cat-cron (n)
   "Cat the perforc-scripts file on server N"
