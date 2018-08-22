@@ -172,11 +172,16 @@
   (when (integerp host)
     (let ((p (aref *p4-servers* host)))
       (setf host (p4-server-host p))))
-  
-  (let ((string (with-output-to-string (str) 
-		  (sb-ext:run-program "scp" (list file (format nil "~a:~a" host dest))
+
+  ;; On Windows, scp with a full path causes problems - can't
+  ;; correctly parse the drive letter. So we'll cd into the directory.
+  (let* ((filename (file-namestring file))
+	 (directory (directory-namestring file))
+	 (string (with-output-to-string (str) 
+		  (sb-ext:run-program "scp" (list filename (format nil "~a:~a" host dest))
 				      :search t
 				      :wait t
+				      :directory directory
 				      :output str))))
     string))
 
@@ -185,7 +190,7 @@
   (let ((newcmd (format nil "sudo -u perforce ~a" cmd)))
     (ssh host newcmd)))
 
-(defun p4scp (file host dest &optional mode)
+(defun p4scp (file host dest &optional mode force)
   "Copy FILE to DEST on HOST
 
 Since we can't actually use scp without a password, we have to fake
@@ -195,13 +200,15 @@ the destination."
   ;; This will fail if destination isn't writeable
   (scp file host "/data/transfer/")
   (let* ((filename (file-namestring file))
-	 (tempfile (format nil "/data/transfer/~a" filename)))
+	 (tempfile (format nil "/data/transfer/~a" filename))
+	 (force-option (if force "-f" ""))
+	 (mv-cmd (format nil "sudo -u perforce mv ~a ~a ~a " force-option tempfile dest)))
     (ssh host (format nil "sudo chown perforce:perforce ~a" tempfile))
     (when mode
       (ssh host (format nil "sudo -u perforce chmod ~a ~a" mode tempfile)))
-    (ssh host (format nil "sudo -u perforce mv ~a ~a" tempfile dest))))
+    (ssh host mv-cmd)))
 
-;;(p4scp "/cygdrive/d/perforce-admin/triggers/check_client_view.py" "dvp4edgepl016" "/data/perforce/" 755)
+;; (p4scp "D:/perforce-admin/triggers/check_client_view.py" "dvp4edgepl016" "/data/perforce/test-commit/root/triggers/" 555)
     
 ;;; Cron functions
 (defun cat-cron (n)
