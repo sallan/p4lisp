@@ -149,6 +149,7 @@
 ;; example usage
 ;;
 ;; (mapcar (lambda (x) (cons x (p4ssh x "ls /data/perforce/scripts"))) '(15 18 19 20))
+;; (remove-if #'numberp *p4-servers*)
 
 ;;; SSH commands
 (defun ssh (host cmd)
@@ -276,12 +277,6 @@ the server home."
     (p4ssh host (format nil "ls ~a/~a" root subdir))))
 
 
-;;;; TODO: You have 2 different p4 functions.  Each is used in the
-;;;; check-* functions, and no place else. To confusing. Let's abandon
-;;;; the generic, top-level p4 function for now, and just write the
-;;;; simplest version that will work in these 2 functions.
-;;;; Actually, the only thing we do is call p4 info, so....
-
 ;; p4 info
 (defun p4-info (&optional port)
   "Run p4 info on PORT or default port if none provided."
@@ -301,8 +296,14 @@ the server home."
 	 (host (p4-server-host p))
 	 (brokers (p4-server-brokers p)))
     (mapcar (lambda (port)
-	      (p4-info (format nil "~a:~a" host port)))
+	      (cons (format nil "~a:~a" host port) (p4-info (format nil "~a:~a" host port))))
 	    brokers)))
+
+(defun check-all-brokers ()
+  (loop
+     for i below (length *p4-servers*)
+     when (not (numberp (aref *p4-servers* i)))
+     collect (check-brokers i)))
 
 ;; Check server
 (defun check-server (n)
@@ -310,6 +311,12 @@ the server home."
   (let* ((p (aref *p4-servers* n))
 	 (host (p4-server-host p)))
     (cons host (p4-info (format nil "~a:21667" host)))))
+
+(defun check-all-servers ()
+  (loop
+     for i below (length *p4-servers*)
+     when (not (numberp (aref *p4-servers* i)))
+     collect (check-server i)))
 
 ;; Show server summary
 (defun show (n)
