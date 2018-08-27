@@ -146,6 +146,31 @@
 		      :comment "Austin Proxy - points to the 004 Edge server"
 		      :brokers '(1667)))
 
+;; AWS proxies
+(setf (aref *p4-servers* 0)
+      (make-p4-server :host "p4proxy-awstest"
+		      :service 'proxy
+		      :root "/data/perforce/p4proxy-21667"
+		      :service 'proxy
+		      :comment "AWS Proxy - points to 005 Edge server"
+		      :brokers '(1667)))
+
+(setf (aref *p4-servers* 1)
+      (make-p4-server :host "dvp4aws001"
+		      :service 'proxy
+		      :root "/data/perforce/p4proxy-21667"
+		      :service 'proxy
+		      :comment "AWS Proxy - points to 005 Edge server"
+		      :brokers '(1667)))
+
+(setf (aref *p4-servers* 11)
+      (make-p4-server :host "p4proxy-aws2"
+		      :service 'proxy
+		      :root "/data/perforce/p4proxy-21667"
+		      :service 'proxy
+		      :comment "AWS Proxy - points to 005 Edge server"
+		      :brokers '(1667)))
+
 ;; example usage
 ;;
 ;; (mapcar (lambda (x) (cons x (p4ssh x "ls /data/perforce/scripts"))) '(15 18 19 20))
@@ -210,6 +235,7 @@ the destination."
     (ssh host mv-cmd)))
 
 ;; (p4scp "D:/perforce-admin/triggers/check_client_view.py" "dvp4edgepl016" "/data/perforce/test-commit/root/triggers/" 555)
+;; (p4scp "D:/perforce-admin/triggers/check_client_view.py" "dvp4edgepl017" "/data/perforce/test-edge/root/triggers/" 555)
     
 ;;; Cron functions
 (defun cat-cron (n)
@@ -276,7 +302,6 @@ the server home."
 	 (root (p4-server-root p)))
     (p4ssh host (format nil "ls ~a/~a" root subdir))))
 
-
 ;; p4 info
 (defun p4-info (&optional port)
   "Run p4 info on PORT or default port if none provided."
@@ -322,3 +347,9 @@ the server home."
   (let ((p (aref *p4-servers* n)))
     (princ p)
     nil))
+
+;;; scratch
+(loop
+   for i below (length *p4-servers*)
+   when (numberp (aref *p4-servers* i))
+   collect i)
