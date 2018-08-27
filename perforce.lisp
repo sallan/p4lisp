@@ -296,27 +296,25 @@ the server home."
 	 (host (p4-server-host p))
 	 (brokers (p4-server-brokers p)))
     (mapcar (lambda (port)
-	      (cons (format nil "~a:~a" host port) (p4-info (format nil "~a:~a" host port))))
+	      (let ((port (format nil "~a:~a" host port)))
+		(cons port (p4-info port))))
 	    brokers)))
-
-(defun check-all-brokers ()
-  (loop
-     for i below (length *p4-servers*)
-     when (not (numberp (aref *p4-servers* i)))
-     collect (check-brokers i)))
 
 ;; Check server
 (defun check-server (n)
   "Run 'p4 info' on the server port (21667) for N"
   (let* ((p (aref *p4-servers* n))
-	 (host (p4-server-host p)))
-    (cons host (p4-info (format nil "~a:21667" host)))))
+	 (host (p4-server-host p))
+	 (port (format nil "~a:21667" host)))
+    (cons port (p4-info port))))
 
-(defun check-all-servers ()
+;; A mapping function
+(defun map-servers (f)
+  "Call F on all perforce servers and  collect results in list"
   (loop
      for i below (length *p4-servers*)
      when (not (numberp (aref *p4-servers* i)))
-     collect (check-server i)))
+     collect (funcall f i)))
 
 ;; Show server summary
 (defun show (n)
