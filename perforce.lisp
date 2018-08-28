@@ -149,7 +149,6 @@
 ;; AWS proxies
 (setf (aref *p4-servers* 0)
       (make-p4-server :host "p4proxy-awstest"
-		      :service 'proxy
 		      :root "/data/perforce/p4proxy-21667"
 		      :service 'proxy
 		      :comment "AWS Proxy - points to 005 Edge server"
@@ -157,7 +156,6 @@
 
 (setf (aref *p4-servers* 1)
       (make-p4-server :host "dvp4aws001"
-		      :service 'proxy
 		      :root "/data/perforce/p4proxy-21667"
 		      :service 'proxy
 		      :comment "AWS Proxy - points to 005 Edge server"
@@ -165,7 +163,6 @@
 
 (setf (aref *p4-servers* 11)
       (make-p4-server :host "p4proxy-aws2"
-		      :service 'proxy
 		      :root "/data/perforce/p4proxy-21667"
 		      :service 'proxy
 		      :comment "AWS Proxy - points to 005 Edge server"
@@ -175,6 +172,25 @@
 ;;
 ;; (mapcar (lambda (x) (cons x (p4ssh x "ls /data/perforce/scripts"))) '(15 18 19 20))
 ;; (remove-if #'numberp *p4-servers*)
+
+;;; Functions to return servers of specifc kind
+(defun list-servers (type)
+  "Return servers of specified service TYPE"
+  (remove-if (lambda (s)
+	       (not (eql type (p4-server-service s))))
+	     *p4-servers*))
+
+(defun edge-servers ()
+  (list-servers 'edge-server))
+
+(defun replicas ()
+  (concatenate 'vector (list-servers 'replica) (list-servers 'forwarding-replica)))
+
+(defun proxies ()
+  (list-servers 'proxy))
+
+(defun sandbox-servers ()
+  (mapcar (lambda (n) (aref *p4-servers* n)) '(16 17)))
 
 ;;; SSH commands
 (defun ssh (host cmd)
