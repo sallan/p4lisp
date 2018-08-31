@@ -355,7 +355,7 @@ the server home."
   (loop
      for i below (length *p4-servers*)
      when (not (numberp (aref *p4-servers* i)))
-     collect (funcall f i)))
+     collect (cons i (funcall f i))))
 
 ;; Show server summary
 (defun show (n)
